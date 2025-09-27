@@ -98,6 +98,76 @@ namespace ASI.Basecode.Services.Services
             }
         }
 
+        /// <summary>
+        /// Update method for menu.
+        /// </summary>
+        /// <param name="inputRequest"></param>
+        /// <param name="userId"></param>
+        /// <returns>Status Code</returns>
+        public int UpdateMenu(MenuRequestViewModel inputRequest, int userId)
+        {
+            try
+            {
+                // Check if the menu exists
+                var existingMenu = menuRepository.GetMenuById(inputRequest.ID);
+                if (existingMenu == null)
+                {
+                    return AppConstants.CrudStatusCodes.DoesNotExist;
+                }
+
+                // Check for unique menu name (excluding current menu)
+                var checkUnique = menuRepository.CheckUniqueMenu(inputRequest.ID, inputRequest.Name);
+                if (checkUnique == -2) // Duplicate exists
+                {
+                    return AppConstants.CrudStatusCodes.DuplicateExist;
+                }
+
+                // Create a dictionary to track changes for logging
+                var unequalProperties = new Dictionary<string, List<string>>();
+
+                // Check for changes in each property
+                if (existingMenu.MenuName != inputRequest.Name)
+                {
+                    unequalProperties["MenuName"] = new List<string> { existingMenu.MenuName, inputRequest.Name };
+                    existingMenu.MenuName = inputRequest.Name;
+                }
+
+                if (existingMenu.MenuDescription != inputRequest.Description)
+                {
+                    unequalProperties["MenuDescription"] = new List<string> { existingMenu.MenuDescription, inputRequest.Description };
+                    existingMenu.MenuDescription = inputRequest.Description;
+                }
+
+                if (existingMenu.Price != inputRequest.Price)
+                {
+                    unequalProperties["Price"] = new List<string> { existingMenu.Price.ToString(), inputRequest.Price.ToString() };
+                    existingMenu.Price = inputRequest.Price;
+                }
+
+                // Only update if there are changes
+                if (unequalProperties.Any())
+                {
+                    // Update the menu
+                    menuRepository.UpdateMenu(existingMenu);
+
+                    // Save changes to logs
+                    var logs = CreateLogMenu(userId, existingMenu, AppConstants.LogTypes.LogUpdate, unequalProperties);
+                    menuRepository.AddLogList(logs);
+                }
+
+                return AppConstants.CrudStatusCodes.Success;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, ex.Message);
+                throw;
+            }
+            finally
+            {
+                uow.Dispose();
+            }
+        }
+
         public int[] BatchDeleteDocument(IEnumerable<int> inputDocumentIds, int userId)
         {
             try

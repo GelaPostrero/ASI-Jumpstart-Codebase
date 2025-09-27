@@ -26,6 +26,11 @@ namespace ASI.Basecode.Data.Repositories
             return this.GetDbSet<Menu>().Where(x => ids.Contains(x.MenuID)).ToList();
         }
 
+        public Menu GetMenuById(int id)
+        {
+            return this.GetDbSet<Menu>().FirstOrDefault(x => x.MenuID == id && !x.IsDeleted);
+        }
+
         public void AddMenu(Menu entity)
         {
             using (var transaction = UnitOfWork.CreateTransaction())
@@ -33,6 +38,24 @@ namespace ASI.Basecode.Data.Repositories
                 try
                 {
                     this.GetDbSet<Menu>().Add(entity);
+                    UnitOfWork.SaveChanges();
+                    transaction.Commit();
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        public void UpdateMenu(Menu entity)
+        {
+            using (var transaction = UnitOfWork.CreateTransaction())
+            {
+                try
+                {
+                    this.GetDbSet<Menu>().Update(entity);
                     UnitOfWork.SaveChanges();
                     transaction.Commit();
                 }

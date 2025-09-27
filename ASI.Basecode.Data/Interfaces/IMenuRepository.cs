@@ -9,9 +9,13 @@ namespace ASI.Basecode.Data.Interfaces
 
         public IEnumerable<Menu> GetRecordsByIds(IEnumerable<int> ids);
 
+        public Menu GetMenuById(int id);
+
         public void DeleteDocument(Menu entity);
 
         public void AddMenu(Menu entity);
+
+        public void UpdateMenu(Menu entity);
 
         public int CheckUniqueMenu(int id, string menuName);
 

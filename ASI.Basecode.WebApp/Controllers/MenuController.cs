@@ -100,6 +100,27 @@ namespace ASI.Basecode.WebApp.Controllers
             }
         }
 
+        /// <summary>
+        /// Update Menu Method
+        /// </summary>
+        /// <param name="menuRequestViewModel"></param>
+        /// <returns>Response Model for the Update operation.</returns>
+        [HttpPut(Name = nameof(UpdateMenu))]
+        public IActionResult UpdateMenu([FromBody] MenuRequestViewModel menuRequestViewModel)
+        {
+            try
+            {
+                var returnCode = menuService.UpdateMenu(menuRequestViewModel, 1); //TODO: Get userId from session
+                var message = HelperFunctions.CommonHelper.GetUpdateResultMessage(returnCode);
+                return StatusCode(message.StatusCode, message.Response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ResponseModel(string.Empty, Resources.Messages.Common.UpdateFailed));
+            }
+        }
+
         [HttpDelete(Name = nameof(BatchDeleteMenu))]
         public IActionResult BatchDeleteMenu([FromBody] int[] ids)
         {

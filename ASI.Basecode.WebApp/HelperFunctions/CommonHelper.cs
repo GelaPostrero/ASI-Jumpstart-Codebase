@@ -22,6 +22,26 @@ namespace ASI.Basecode.WebApp.HelperFunctions
             }
         }
 
+        public static (ResponseModel Response, int StatusCode) GetUpdateResultMessage(int status)
+        {
+            if (status >= AppConstants.CrudStatusCodes.Success)
+            {
+                return (new ResponseModel(Resources.Messages.Common.Updated), (int)HttpStatusCode.OK);
+            }
+            else if (status == AppConstants.CrudStatusCodes.DuplicateExist)
+            {
+                return (new ResponseModel(Resources.Messages.Common.UpdateFieldUniqueExists), (int)HttpStatusCode.Conflict);
+            }
+            else if (status == AppConstants.CrudStatusCodes.DoesNotExist)
+            {
+                return (new ResponseModel(Resources.Messages.Common.UpdateDoesNotExist), (int)HttpStatusCode.NotFound);
+            }
+            else
+            {
+                return (new ResponseModel(Resources.Messages.Common.UpdateFailed), (int)HttpStatusCode.BadRequest);
+            }
+        }
+
         public static string[] GetResultCount(int[] statusList, string operation)
         {
             // 8 Messages for batch process
