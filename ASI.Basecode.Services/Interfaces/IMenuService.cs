@@ -9,9 +9,9 @@ namespace ASI.Basecode.Services.Interfaces
     {
         public IEnumerable<MenuReturnViewModel> GetAllMenu();
 
-        public int AddMenu(MenuRequestViewModel inputRequest, int userId);
+        public (int statusCode, MenuReturnViewModel createdItem) AddMenu(MenuRequestViewModel inputRequest, int userId);
 
-        public int UpdateMenu(MenuRequestViewModel inputRequest, int userId);
+        public (int statusCode, MenuReturnViewModel updatedItem) UpdateMenu(MenuRequestViewModel inputRequest, int userId);
 
         public int[] BatchDeleteDocument(IEnumerable<int> inputDocumentIds, int userId);
     }

@@ -47,8 +47,8 @@ namespace ASI.Basecode.Services.Services
         /// </summary>
         /// <param name="inputRequest"></param>
         /// <param name="userId"></param>
-        /// <returns>Status Code</returns>
-        public int AddMenu(MenuRequestViewModel inputRequest, int userId)
+        /// <returns>Status Code and Created Item</returns>
+        public (int statusCode, MenuReturnViewModel createdItem) AddMenu(MenuRequestViewModel inputRequest, int userId)
         {
             try
             {
@@ -75,16 +75,19 @@ namespace ASI.Basecode.Services.Services
                         // Save changes to logs
                         var logs = CreateLogMenu(userId, toAddEntity, AppConstants.LogTypes.LogAdd, null);
                         menuRepository.AddLogList(logs);
-                        return AppConstants.CrudStatusCodes.Success;
+                        
+                        // Map the created entity to return view model
+                        var createdItem = _mapper.Map<MenuReturnViewModel>(toAddEntity);
+                        return (AppConstants.CrudStatusCodes.Success, createdItem);
                     }
                     else
                     {
-                        return AppConstants.CrudStatusCodes.DuplicateExist;
+                        return (AppConstants.CrudStatusCodes.DuplicateExist, null);
                     }
                 }
                 else
                 {
-                    return AppConstants.CrudStatusCodes.DoesNotExist;
+                    return (AppConstants.CrudStatusCodes.DoesNotExist, null);
                 }
             }
             catch (Exception ex)
@@ -103,8 +106,8 @@ namespace ASI.Basecode.Services.Services
         /// </summary>
         /// <param name="inputRequest"></param>
         /// <param name="userId"></param>
-        /// <returns>Status Code</returns>
-        public int UpdateMenu(MenuRequestViewModel inputRequest, int userId)
+        /// <returns>Status Code and Updated Item</returns>
+        public (int statusCode, MenuReturnViewModel updatedItem) UpdateMenu(MenuRequestViewModel inputRequest, int userId)
         {
             try
             {
@@ -112,14 +115,14 @@ namespace ASI.Basecode.Services.Services
                 var existingMenu = menuRepository.GetMenuById(inputRequest.ID);
                 if (existingMenu == null)
                 {
-                    return AppConstants.CrudStatusCodes.DoesNotExist;
+                    return (AppConstants.CrudStatusCodes.DoesNotExist, null);
                 }
 
                 // Check for unique menu name (excluding current menu)
                 var checkUnique = menuRepository.CheckUniqueMenu(inputRequest.ID, inputRequest.Name);
                 if (checkUnique == -2) // Duplicate exists
                 {
-                    return AppConstants.CrudStatusCodes.DuplicateExist;
+                    return (AppConstants.CrudStatusCodes.DuplicateExist, null);
                 }
 
                 // Create a dictionary to track changes for logging
@@ -155,7 +158,9 @@ namespace ASI.Basecode.Services.Services
                     menuRepository.AddLogList(logs);
                 }
 
-                return AppConstants.CrudStatusCodes.Success;
+                // Map the updated entity to return view model
+                var updatedItem = _mapper.Map<MenuReturnViewModel>(existingMenu);
+                return (AppConstants.CrudStatusCodes.Success, updatedItem);
             }
             catch (Exception ex)
             {

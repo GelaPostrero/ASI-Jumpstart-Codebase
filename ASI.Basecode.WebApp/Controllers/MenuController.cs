@@ -72,7 +72,7 @@ namespace ASI.Basecode.WebApp.Controllers
         /// </summary>
         /// <returns>List of all Menus.</returns>
         [HttpGet]
-        //[AllowAnonymous]
+        [AllowAnonymous]
         public IActionResult GetAllMenus()
         {
             var returnList = menuService.GetAllMenu();
@@ -85,13 +85,23 @@ namespace ASI.Basecode.WebApp.Controllers
         /// <param name="menuRequestViewModel"></param>
         /// <returns>Response Model for the Add/Insertion operation.</returns>
         [HttpPost(Name = nameof(AddMenu))]
+        [AllowAnonymous]
         public IActionResult AddMenu([FromBody] MenuRequestViewModel menuRequestViewModel)
         {
             try
             {
-                var returnCode = menuService.AddMenu(menuRequestViewModel, 1); //TODO: Get userId from session
+                var (returnCode, createdItem) = menuService.AddMenu(menuRequestViewModel, 1); //TODO: Get userId from session
                 var message = HelperFunctions.CommonHelper.GetAddResultMessage(returnCode);
-                return StatusCode(message.StatusCode, message.Response);
+                
+                // If successful, include the created item in the response
+                if (returnCode >= AppConstants.CrudStatusCodes.Success)
+                {
+                    return StatusCode(message.StatusCode, new ResponseModel(createdItem, message.Response.Message));
+                }
+                else
+                {
+                    return StatusCode(message.StatusCode, message.Response);
+                }
             }
             catch (Exception ex)
             {
@@ -106,13 +116,23 @@ namespace ASI.Basecode.WebApp.Controllers
         /// <param name="menuRequestViewModel"></param>
         /// <returns>Response Model for the Update operation.</returns>
         [HttpPut(Name = nameof(UpdateMenu))]
+        [AllowAnonymous]
         public IActionResult UpdateMenu([FromBody] MenuRequestViewModel menuRequestViewModel)
         {
             try
             {
-                var returnCode = menuService.UpdateMenu(menuRequestViewModel, 1); //TODO: Get userId from session
+                var (returnCode, updatedItem) = menuService.UpdateMenu(menuRequestViewModel, 1); //TODO: Get userId from session
                 var message = HelperFunctions.CommonHelper.GetUpdateResultMessage(returnCode);
-                return StatusCode(message.StatusCode, message.Response);
+                
+                // If successful, include the updated item in the response
+                if (returnCode >= AppConstants.CrudStatusCodes.Success)
+                {
+                    return StatusCode(message.StatusCode, new ResponseModel(updatedItem, message.Response.Message));
+                }
+                else
+                {
+                    return StatusCode(message.StatusCode, message.Response);
+                }
             }
             catch (Exception ex)
             {
@@ -122,6 +142,7 @@ namespace ASI.Basecode.WebApp.Controllers
         }
 
         [HttpDelete(Name = nameof(BatchDeleteMenu))]
+        [AllowAnonymous]
         public IActionResult BatchDeleteMenu([FromBody] int[] ids)
         {
             try

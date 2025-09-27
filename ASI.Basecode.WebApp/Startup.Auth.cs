@@ -57,7 +57,11 @@ namespace ASI.Basecode.WebApp
 
             this._services.AddMvc(options =>
             {
-                options.Filters.Add(new AuthorizeFilter("RequireAuthenticatedUser"));
+                // Apply authorization filter globally but exclude API routes
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
             });
         }
     }
